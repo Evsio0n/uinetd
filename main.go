@@ -72,7 +72,7 @@ func main() {
 				break
 			}
 			log.Error(err)
-		} else if string(buf) == "" {
+		} else if string(buf) == " " {
 			check = true
 		} else {
 			check = false
