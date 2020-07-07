@@ -73,7 +73,7 @@ func main() {
 				break
 			}
 			log.Error(err)
-		} else if strings.Contains(string(buf), "\n") {
+		} else if strings.Contains("\n", string(buf)) {
 			check = true
 		} else {
 			check = false
