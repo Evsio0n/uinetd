@@ -1,4 +1,4 @@
-## UINETD - A Udp forward tool just like
+## UINETD - A Udp forward tool just like RINETD
 
 ### Description
 Redirects TCP&UDP connections from a local address & port to another address.
