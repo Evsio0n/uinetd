@@ -78,11 +78,14 @@ func main() {
 			check = false
 		}
 		if check {
-
-		} else if strings.Contains(string(buf), "#") {
+			//Do nothing
 		} else {
-			log.Info(string(buf))
+			if strings.Contains(string(buf), "#") {
+			} else {
+				log.Info(string(buf))
+			}
 		}
+
 	}
 
 }
