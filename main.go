@@ -46,11 +46,12 @@ func createUcpThread(readAddress string) {
 		log.Error(ers)
 	}
 }
+
 func createAllThread(readAddress string) {
 	createUcpThread(readAddress)
 	createTcpThread(readAddress)
-
 }
+
 func main() {
 	filename := "/etc/uinetd.conf"
 	f, err := os.Open(filename)
@@ -72,7 +73,7 @@ func main() {
 				break
 			}
 			log.Error(err)
-		} else if string(buf) == "/n" {
+		} else if strings.Contains(string(buf), "\n") {
 			check = true
 		} else {
 			check = false
@@ -85,7 +86,5 @@ func main() {
 				fmt.Print(string(buf))
 			}
 		}
-
 	}
-
 }
