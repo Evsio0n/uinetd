@@ -72,7 +72,7 @@ func main() {
 				break
 			}
 			log.Error(err)
-		} else if string(buf) == " " {
+		} else if string(buf) == "/n" {
 			check = true
 		} else {
 			check = false
@@ -82,7 +82,7 @@ func main() {
 		} else {
 			if strings.Contains(string(buf), "#") {
 			} else {
-				fmt.Print(buf)
+				fmt.Print(string(buf))
 			}
 		}
 
