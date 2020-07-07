@@ -82,7 +82,7 @@ func main() {
 		} else {
 			if strings.Contains(string(buf), "#") {
 			} else {
-				log.Info(string(buf))
+				fmt.Print(string(buf))
 			}
 		}
 
