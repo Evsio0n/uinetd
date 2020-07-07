@@ -1,4 +1,4 @@
-package uinetd
+package main
 
 import (
 	"./lib/log"
@@ -62,9 +62,8 @@ func main() {
 	defer f.Close()
 	r := bufio.NewReader(f)
 	//新建一个缓冲区，把内容先放在缓冲区
-
+	var check bool = false
 	var buf []byte
-	var count int = 0
 	for {
 		//遇到'\n'结束读取, 但是'\n'也读取进入
 		buf, err = r.ReadBytes('\n')
@@ -72,13 +71,18 @@ func main() {
 			if err == io.EOF { //文件已经结束
 				break
 			}
-			fmt.Println("err = ", err)
+			log.Error(err)
+		} else if string(buf) == "" {
+			check = true
+		} else {
+			check = false
 		}
-		count++
-		if strings.Contains(string(buf), "#") {
-			count--
+		if check {
+
+		} else if strings.Contains(string(buf), "#") {
 		} else {
 			log.Info(string(buf))
 		}
 	}
+
 }
