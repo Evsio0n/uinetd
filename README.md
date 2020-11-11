@@ -7,19 +7,21 @@ The process will open a socket to listen all the port from local bindings.
 
 ### Usage
 
-local address|local bind port|remote address|remote port|`tcp` or `udp` or `all`
+local address|local bind port (can bind more than one port)|remote address|remote port|`tcp` or `udp` or `all`
 -|-|-|-|-
 0.0.0.0|80|192.168.1.2|80|ALL
+0.0.0.0|80,1080,8080|192.168.1.2|80|ALL
 
 ### Filter Connections
 `allow *.*.*.*` or `deny *.*.*.*` (IPv6 available)
 
 ### Log who is using your redirection server (If you want.)
 
-#### `loglevel 0-2`
+#### `loglevel 0-4` (If you note 0 there will be no log recorded)
 
 loglevel|number|description
 -|-|-
-loglevel|0|Note  every connection  `TIme, From IP, Port` to `Destination IP,Port`
-loglevel|1|Note only prohibited connection `Time, From IP, Port` to `Destination IP,Port`
-loglevel|2|Note only prohibited connection `Time`
+loglevel|4|Note  every connection  `TIme, From IP, Port` to `Destination IP,Port`, Errors
+loglevel|3|Note only prohibited connection `Time, From IP, Port` to `Destination IP,Port` , Errors
+loglevel|2|Note only prohibited connection `Time` , Errors
+loglevel|1|Errors
