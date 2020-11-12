@@ -2,7 +2,7 @@ package checkIP
 
 import "net"
 
-func CheckIsIP(ip string) bool {
+func isIp(ip string) bool {
 	if net.ParseIP(ip) == nil {
 		return false
 	} else {
@@ -10,7 +10,7 @@ func CheckIsIP(ip string) bool {
 	}
 }
 
-func checkIPType(ip string) int {
+func ipType(ip string) int {
 	for i := 0; i < len(ip); i++ {
 		switch ip[i] {
 		case '.':
