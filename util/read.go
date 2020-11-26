@@ -2,7 +2,7 @@ package utils
 
 import (
 	"../lib/checkIP"
-	"../lib/log"
+	"../lib/logger"
 	"bufio"
 	"fmt"
 	"io"

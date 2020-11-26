@@ -1,10 +1,10 @@
 package main
 
 import (
-	"./lib/log"
+	"./lib/logger"
 	"./util"
 	"fmt"
-	logs "github.com/Evsio0n/log"
+	logs "github.com/evsio0n/log"
 	"os"
 )
 
