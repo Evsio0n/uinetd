@@ -13,7 +13,7 @@ import (
 
 //Read conf data.
 
-var defaultConf = "/etc/uintd.conf"
+var defaultConf = "/etc/uinetd.conf"
 
 func ReadConfAndDial() error {
 
