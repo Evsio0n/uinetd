@@ -2,7 +2,7 @@
 
 ### Description
 Redirects TCP & UDP connections from a local address & port to another address.
-Configuration files is just in /etc/uintd.conf.(Like rinetd).
+Configuration files is just in /etc/uinetd.conf.(Like rinetd).
 The process will open a socket to listen all the port from local bindings.
 
 ### Usage
