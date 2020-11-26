@@ -10,9 +10,9 @@ The process will open a socket to listen all the port from local bindings.
 local address|local bind port (can bind more than one port)|remote address|remote port|`tcp` or `udp` or `all`
 -|-|-|-|-
 0.0.0.0|80|192.168.1.2|80|ALL
-0.0.0.0|80,1080,8080|192.168.1.2|80|TCP
+0.0.0.0|80|192.168.1.2|80|TCP
 
-### Filter Connections
+### Filter Connections 
 `allow *.*.*.*` or `deny *.*.*.*` (IPv6 available)
 
 ### Log who is using your redirection server (If you want.)

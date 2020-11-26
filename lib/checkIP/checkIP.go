@@ -1,8 +1,12 @@
 package checkIP
 
-import "net"
+import (
+	"net"
+	"strconv"
+	"strings"
+)
 
-func isIp(ip string) bool {
+func IsIp(ip string) bool {
 	if net.ParseIP(ip) == nil {
 		return false
 	} else {
@@ -10,7 +14,7 @@ func isIp(ip string) bool {
 	}
 }
 
-func ipType(ip string) int {
+func IpType(ip string) int {
 	for i := 0; i < len(ip); i++ {
 		switch ip[i] {
 		case '.':
@@ -20,4 +24,23 @@ func ipType(ip string) int {
 		}
 	}
 	return 0
+}
+
+func IsNormalPort(port string) bool {
+	//Referring to http://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml, Port must be [0-65535]
+	e, err := strconv.Atoi(port)
+	if err != nil {
+		return false
+	} else if e < 65535 && e > 0 {
+		return true
+	}
+	return false
+}
+
+func CheckMode(str string) bool {
+	strLow := strings.ToLower(str)
+	if strLow == "udp" || strLow == "tcp" || strLow == "all" {
+		return true
+	}
+	return false
 }
