@@ -1,8 +1,8 @@
-package utila
+package utils
 
 import (
-	check "../lib/checkIP"
-	logger "../lib/log"
+	"../lib/checkIP"
+	"../lib/log"
 	"bufio"
 	"fmt"
 	"io"
@@ -11,18 +11,13 @@ import (
 	"strings"
 )
 
-//TODO:Read conf data.
+//Read conf data.
 
 var defaultConf = "/etc/uintd.conf"
 
-func readConf(strConf string) error {
-	var conf string
-	if strConf == "" {
-		conf = defaultConf
-	} else {
-		conf = strConf
-	}
-	file, err := os.Open(conf)
+func ReadConfAndDial() error {
+
+	file, err := os.Open(defaultConf)
 	if err != nil {
 		file.Close()
 		return fmt.Errorf("%s:%e", "Error when loading file ", err)
@@ -42,7 +37,7 @@ func readConf(strConf string) error {
 		} else if d[1] == "loglevel" {
 			intLevel, _ := strconv.Atoi(d[2])
 			logger.SetLoglevel(intLevel)
-		} else if check.IsIp(d[1]) && check.IsNormalPort(d[2]) && check.IsIp(d[3]) && check.IsNormalPort(d[4]) && check.CheckMode(d[5]) {
+		} else if check.IsIp(d[1]) && check.IsNormalPort(d[2]) && check.IsIp(d[3]) && check.IsNormalPort(d[4]) && check.IsMode(d[5]) {
 			//Port must be under 65535
 			newForwardItems := forwardingItems{}
 			newForwardItems.localIp[i] = d[1]
@@ -50,7 +45,9 @@ func readConf(strConf string) error {
 			newForwardItems.dstIP[i] = d[3]
 			newForwardItems.dstPort[i] = atoi(d[4])
 			newForwardItems.method[i] = d[5]
-			dialConn(newForwardItems)
+			//Add forwardItems to dial.
+			err = dialConn(newForwardItems)
+			return err
 		}
 	}
 	file.Close()

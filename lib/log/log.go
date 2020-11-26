@@ -1,4 +1,4 @@
-package log
+package logger
 
 import (
 	logger "log"
@@ -24,18 +24,24 @@ func SetLoglevel(loglevel int) {
 	}
 }
 
-func logNew(logPath string) {
-	f, err := os.OpenFile(logPath, os.O_CREATE|os.O_RDWR, 0644)
+func InitialLog() error {
+	f, err := os.OpenFile(defaultLogPath, os.O_CREATE|os.O_RDWR, 0644)
 	if err != nil {
 		logger.Fatal(err)
+		return err
 	}
 	if _, err := f.Write([]byte("appended some data\n")); err != nil {
 		f.Close()
-
 		// ignore error; Write error takes precedence
 		logger.Fatal(err)
 	}
 	if f.Close() != nil {
 		logger.Fatal(err)
+		return err
 	}
+	return nil
+}
+
+func logNew(logPath string, loglevel int) {
+
 }

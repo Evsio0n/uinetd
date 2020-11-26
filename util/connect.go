@@ -1,4 +1,4 @@
-package utila
+package utils
 
 import (
 	"fmt"

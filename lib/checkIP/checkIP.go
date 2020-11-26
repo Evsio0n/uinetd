@@ -1,4 +1,4 @@
-package checkIP
+package check
 
 import (
 	"net"
@@ -37,7 +37,7 @@ func IsNormalPort(port string) bool {
 	return false
 }
 
-func CheckMode(str string) bool {
+func IsMode(str string) bool {
 	strLow := strings.ToLower(str)
 	if strLow == "udp" || strLow == "tcp" || strLow == "all" {
 		return true

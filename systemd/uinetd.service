@@ -1,0 +1,17 @@
+# Systemd service configuration for uinetd
+# You can use this file if you want to start uinetd during startup
+
+[Unit]
+Description=Port forwarding
+After=network-online.target
+
+[Service]
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+ExecStart=/usr/local/bin/uinetd
+LimitNOFILE=1048576
+Restart=no
+Type=simple
+User=root
+
+[Install]
+WantedBy=multi-user.target

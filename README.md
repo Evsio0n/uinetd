@@ -7,7 +7,7 @@ The process will open a socket to listen all the port from local bindings.
 
 ### Usage
 
-local address|local bind port (can bind more than one port)|remote address|remote port|`tcp` or `udp` or `all`
+local address|local bind port|remote address|remote port|`tcp` or `udp` or `all`
 -|-|-|-|-
 0.0.0.0|80|192.168.1.2|80|ALL
 0.0.0.0|80|192.168.1.2|80|TCP
@@ -21,7 +21,7 @@ local address|local bind port (can bind more than one port)|remote address|remot
 
 loglevel|number|description
 -|-|-
-loglevel|4|Note  every connection  `TIme, From IP, Port` to `Destination IP,Port`, Errors
+loglevel|4|Note  every connection  `Time, From IP, Port` to `Destination IP,Port`, Errors
 loglevel|3|Note only prohibited connection `Time, From IP, Port` to `Destination IP,Port` , Errors
 loglevel|2|Note only prohibited connection `Time` , Errors
 loglevel|1|Errors
