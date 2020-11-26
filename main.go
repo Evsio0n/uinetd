@@ -5,6 +5,7 @@ import (
 	"./util"
 	"fmt"
 	logs "github.com/Evsio0n/log"
+	"os"
 )
 
 func initial() error {
@@ -25,5 +26,6 @@ func main() {
 	err := initial()
 	if err != nil {
 		logs.Error(err)
+		os.Exit(1)
 	}
 }
