@@ -1,10 +1,10 @@
 package utils
 
 import (
-	"../lib/checkIP"
-	"../lib/logger"
 	"bufio"
 	"fmt"
+	"github.com/evsio0n/uinetd/lib/checkIP"
+	"github.com/evsio0n/uinetd/lib/logger"
 	"io"
 	"os"
 	"strconv"

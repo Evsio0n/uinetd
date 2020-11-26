@@ -1,9 +1,9 @@
 package main
 
 import (
-	"./lib/logger"
-	"./util"
 	"fmt"
+	"github.com/Evsio0n/uinetd/lib/logger"
+	"github.com/Evsio0n/uinetd/utils"
 	logs "github.com/evsio0n/log"
 	"os"
 )
