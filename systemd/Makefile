@@ -1,7 +1,7 @@
 .PHONY: install uninstall
 
 install:
-	install -Dm0644 uinetd.service /usr/lib/systemd/system/pofwd.service
+	install -Dm0644 uinetd.service /usr/lib/systemd/system/uinetd.service
 	cp uinetd.conf /etc/uinetd.conf
 	chmod 0644 /etc/uinetd.conf
 	touch /var/log/uinetd.log
