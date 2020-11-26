@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/Evsio0n/uinetd/lib/logger"
-	"github.com/Evsio0n/uinetd/utils"
 	logs "github.com/evsio0n/log"
+	"github.com/evsio0n/uinetd/logger"
+	"github.com/evsio0n/uinetd/utils"
 	"os"
 )
 

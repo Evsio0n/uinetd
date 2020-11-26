@@ -3,8 +3,8 @@ package utils
 import (
 	"bufio"
 	"fmt"
-	"github.com/evsio0n/uinetd/lib/checkIP"
-	"github.com/evsio0n/uinetd/lib/logger"
+	"github.com/evsio0n/uinetd/check"
+	"github.com/evsio0n/uinetd/logger"
 	"io"
 	"os"
 	"strconv"
