@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	logs "github.com/evsio0n/log"
-	"github.com/evsio0n/uinetd/logger"
+	"github.com/evsio0n/uinetd/pkg/logger"
 	"github.com/evsio0n/uinetd/utils"
 	"os"
 )
