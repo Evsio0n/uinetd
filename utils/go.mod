@@ -1,4 +1,4 @@
-module utils
+module github.com/evsio0n/uinetd/utils
 
 go 1.14
 require (
