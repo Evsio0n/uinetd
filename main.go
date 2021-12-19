@@ -1,23 +1,10 @@
 package main
 
 import (
-	"fmt"
-	logs "github.com/evsio0n/log"
-	"github.com/evsio0n/uinetd/pkg/logger"
-	"github.com/evsio0n/uinetd/utils"
 	"os"
 )
 
 func initial() error {
-	err := logger.InitialLog()
-	if err != nil {
-		return fmt.Errorf("%s:%e", "Error when opening log file at /var/log/uinetd.log, Error message:", err)
-	} else {
-		err = utils.ReadConfAndDial()
-		if err != nil {
-			return fmt.Errorf("%s:%e", "Error when read configuration file, Error message:", err)
-		}
-	}
 	return nil
 }
 
@@ -25,7 +12,6 @@ func initial() error {
 func main() {
 	err := initial()
 	if err != nil {
-		logs.Error(err)
 		os.Exit(1)
 	}
 }

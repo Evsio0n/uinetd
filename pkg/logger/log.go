@@ -1,13 +1,12 @@
 package logger
 
-import (
-	logger "log"
-	"os"
-)
+import "log/syslog"
 
 var defaultLogPath = "/var/log/uinetd.log"
 
 var logLevelConfig int
+var sysLogger *syslog.Writer
+var err error
 
 func SetLoglevel(loglevel int) {
 	switch loglevel {
@@ -24,12 +23,15 @@ func SetLoglevel(loglevel int) {
 	}
 }
 
-func InitialLog() error {
+//This job should be done by syslog
+/*func InitialLog() error {
+	os.Create(defaultLogPath)
 	f, err := os.OpenFile(defaultLogPath, os.O_CREATE|os.O_RDWR, 0644)
 	if err != nil {
 		logger.Fatal(err)
 		return err
 	}
+	//create file if not exist
 	if _, err := f.Write([]byte("appended some data\n")); err != nil {
 		f.Close()
 		// ignore error; Write error takes precedence
@@ -40,8 +42,28 @@ func InitialLog() error {
 		return err
 	}
 	return nil
+}*/
+
+//InitialLog initial log with syslog
+func InitialLog() error {
+	if logLevelConfig <= 3 {
+		sysLogger, err = syslog.New(syslog.LOG_SYSLOG, "uinetd")
+		if err != nil {
+			return err
+		} else {
+			sysLogger, err = syslog.New(syslog.LOG_SYSLOG, "uinetd")
+			if err != nil {
+				return err
+			}
+		}
+		sysLogger.Info("")
+	}
+	return nil
+}
+func NewInfo(str string) {
+	sysLogger.Info(str)
 }
 
-func logNew(logPath string, loglevel int) {
-
+func NewError(str string) {
+	sysLogger.Err(str)
 }

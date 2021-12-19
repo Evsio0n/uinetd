@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/evsio0n/uinetd/pkg/check"
 	"github.com/evsio0n/uinetd/pkg/logger"
-	"io"
 	"os"
 	"strconv"
 	"strings"
@@ -15,50 +14,92 @@ import (
 
 var defaultConf = "/etc/uinetd.conf"
 
-func ReadConfAndDial() error {
+//ipv4RegexPattern matches ipv4 string like "127.0.0.1"
+var ipv4RegexPattern = `^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$`
 
-	file, err := os.Open(defaultConf)
+//ipv6onlyRegexPattern matching string like "2001:da8::"
+var ipv6onlyRegexPattern = "^[0-9a-fA-F]*:([0-9a-fA-F]|:)*$"
+
+// ipv6WithSquareBracketPattern matching string like "[2001:da8::]"
+var ipv6WithSquareBracketPattern = "^\\[[0-9a-fA-F]*:([0-9a-fA-F]|:)*\\]$"
+
+//portRegexPattern matches port string like "8080"
+var portRegexPattern = `^([0-9]|[1-9][0-9]|[1-9][0-9]{2}|[1-9][0-9]{3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$`
+
+func ReadConf() {
+	//read conf file
+	file, err := os.OpenFile(defaultConf, os.O_RDONLY, 0666)
 	if err != nil {
-		file.Close()
-		return fmt.Errorf("%s:%e", "Error when loading file ", err)
+		logger.NewError(fmt.Sprintf("open conf file error:%e", err))
+		return
 	}
-	br := bufio.NewReader(file)
+	defer file.Close()
+
+	//read per line and parse
+	buffer := bufio.NewReader(file)
 	for {
-		i := 0
-		i++
-		a, _, c := br.ReadLine()
-		//Read configure per line.
-		if c == io.EOF {
+		line, err := buffer.ReadString('\n')
+		if err != nil {
 			break
 		}
-		d := strings.Fields(string(a))
-		if len(d) == 0 {
-			return fmt.Errorf("%s", "No configuration, exiting...")
+		//parse line
+		parseLine(line)
+	}
+}
+
+//parseLine parse line and set config
+func parseLine(str string) {
+	//deal with comment
+	if strings.HasPrefix(str, "#") {
+		//do nothing
+	} else {
+		//separate line
+		lineprefix := strings.Fields(str)
+		//check line prefix
+		if len(lineprefix) == 0 {
+			//do nothing
 		} else {
-			if strings.ContainsAny(d[0], "#") {
-				// Do nothing with #
-			} else if d[1] == "loglevel" {
-				intLevel, _ := strconv.Atoi(d[2])
-				logger.SetLoglevel(intLevel)
-			} else if check.IsIp(d[0]) && check.IsNormalPort(d[1]) && check.IsIp(d[2]) && check.IsNormalPort(d[3]) && check.IsMode(d[5]) {
-				//Port must be under 65535
-				newForwardItems := forwardingItems{}
-				newForwardItems.localIp[i] = d[0]
-				newForwardItems.localPorts[i] = atoi(d[1])
-				newForwardItems.dstIP[i] = d[2]
-				newForwardItems.dstPort[i] = atoi(d[3])
-				newForwardItems.method[i] = d[4]
-				//Add forwardItems to dial.
-				err = dialConn(newForwardItems)
-				return err
+			//check line prefix
+			switch lineprefix[0] {
+			//TODO: adding deny and allow chain
+			case "deny":
+
+			case "allow":
+
+			case "loglevel":
+				atoi, err := strconv.Atoi(lineprefix[1])
+				if err != nil {
+					logger.NewError(fmt.Sprintf("parse loglevel error:%e", err))
+				} else {
+					if atoi > 0 && atoi < 5 {
+						logger.SetLoglevel(atoi)
+					} else {
+						logger.NewError(fmt.Sprintf("loglevel: %d is invalid.", atoi))
+					}
+				}
+			default:
+				//check if have 5 fields per line
+				if len(lineprefix) == 5 {
+					//check if both address and port is valid
+					if check.IP(lineprefix[0]) && check.IP(lineprefix[2]) {
+						//check port is valid
+						if check.Port(lineprefix[1]) && check.Port(lineprefix[3]) {
+							//check protocol
+							if check.Protocol(lineprefix[4]) {
+								//TODO: add to config
+
+							} else {
+								logger.NewError(fmt.Sprintf("protocol: \"%s\" is invalid.", lineprefix[4]))
+							}
+						} else {
+							logger.NewError(fmt.Sprintf("port: is invalid.", lineprefix[2]))
+						}
+					}
+				} else {
+					logger.NewError(fmt.Sprintf("line: %s is invalid.Skipping", str))
+				}
+
 			}
 		}
 	}
-	file.Close()
-	return nil
-
-}
-func atoi(str string) int {
-	a, _ := strconv.Atoi(str)
-	return a
 }
