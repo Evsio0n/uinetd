@@ -17,5 +17,5 @@ uninstall:
 	$(MAKE) -C systemd uninstall
 
 uinetd: main.go
-	go get -v github.com/Evsio0n/log
+	go get -v github.com/evsio0n/log
 	go build -o uinetd
