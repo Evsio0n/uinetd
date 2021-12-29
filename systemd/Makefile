@@ -9,5 +9,5 @@ install:
 	systemctl daemon-reload || true
 
 uninstall:
-	rm -f /usr/lib/systemd/system/pofwd.service /etc/uinetd.conf /var/log/uinetd.log
+	rm -f /usr/lib/systemd/system/uinetd.service /etc/uinetd.conf /var/log/uinetd.log
 	systemctl daemon-reload || true

@@ -1,10 +1,12 @@
 package logger
 
-import "log/syslog"
+import (
+	"log/syslog"
+)
 
 var defaultLogPath = "/var/log/uinetd.log"
 
-var logLevelConfig int
+var logLevelConfig = 1
 var sysLogger *syslog.Writer
 var err error
 
@@ -19,7 +21,7 @@ func SetLoglevel(loglevel int) {
 	case 4:
 		logLevelConfig = 4
 	default:
-		logLevelConfig = 0
+		logLevelConfig = 1
 	}
 }
 
@@ -46,24 +48,29 @@ func SetLoglevel(loglevel int) {
 
 //InitialLog initial log with syslog
 func InitialLog() error {
-	if logLevelConfig <= 3 {
-		sysLogger, err = syslog.New(syslog.LOG_SYSLOG, "uinetd")
-		if err != nil {
-			return err
-		} else {
-			sysLogger, err = syslog.New(syslog.LOG_SYSLOG, "uinetd")
-			if err != nil {
-				return err
-			}
-		}
-		sysLogger.Info("")
+	//default set to lazy output before from SetLogLevel.
+	logLevelConfig = 0
+	sysLogger, err = syslog.New(syslog.LOG_SYSLOG, "uinetd")
+	if err != nil {
+		return err
 	}
+	sysLogger.Info("Starting uinetd from now.")
 	return nil
 }
 func NewInfo(str string) {
-	sysLogger.Info(str)
+	if checkLogLevelIsVerbose() {
+		sysLogger.Info(str)
+	}
 }
 
 func NewError(str string) {
 	sysLogger.Err(str)
+}
+
+func checkLogLevelIsVerbose() bool {
+	//if logLevelConfig is 1 then only output level ERROR to syslog
+	if logLevelConfig != 1 {
+		return true
+	}
+	return false
 }

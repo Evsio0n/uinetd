@@ -12,30 +12,24 @@ import (
 
 //Read conf data.
 
-var defaultConf = "/etc/uinetd.conf"
+var defaultConf = "/etc/uinetd/uinetd.conf"
 
-//ipv4RegexPattern matches ipv4 string like "127.0.0.1"
-var ipv4RegexPattern = `^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$`
-
-//ipv6onlyRegexPattern matching string like "2001:da8::"
-var ipv6onlyRegexPattern = "^[0-9a-fA-F]*:([0-9a-fA-F]|:)*$"
-
-// ipv6WithSquareBracketPattern matching string like "[2001:da8::]"
-var ipv6WithSquareBracketPattern = "^\\[[0-9a-fA-F]*:([0-9a-fA-F]|:)*\\]$"
-
-//portRegexPattern matches port string like "8080"
-var portRegexPattern = `^([0-9]|[1-9][0-9]|[1-9][0-9]{2}|[1-9][0-9]{3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$`
-
-func ReadConf() {
+func ReadConf() error {
 	//read conf file
 	file, err := os.OpenFile(defaultConf, os.O_RDONLY, 0666)
 	if err != nil {
-		logger.NewError(fmt.Sprintf("open conf file error:%e", err))
-		return
+		logger.NewError(fmt.Sprintf("open conf file error:%s", err.Error()))
+		return err
 	}
-	defer file.Close()
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			logger.NewError(fmt.Sprintf("Error:%s", err.Error()))
+		}
+	}(file)
 
 	//read per line and parse
+	phraseLine := 1
 	buffer := bufio.NewReader(file)
 	for {
 		line, err := buffer.ReadString('\n')
@@ -43,31 +37,36 @@ func ReadConf() {
 			break
 		}
 		//parse line
-		parseLine(line)
+		parseLine(line, phraseLine)
+		phraseLine++
 	}
+	//When finish reading we should let all ForwardItems Up.
+	//Goto Startup
+	ForwardItems.Start()
+	return nil
 }
 
-//parseLine parse line and set config
-func parseLine(str string) {
+//parseLine parse line and set config, then add items to ForwardItems.
+func parseLine(str string, phraseLine int) {
 	//deal with comment
 	if strings.HasPrefix(str, "#") {
 		//do nothing
 	} else {
 		//separate line
-		lineprefix := strings.Fields(str)
+		linePrefix := strings.Fields(str)
 		//check line prefix
-		if len(lineprefix) == 0 {
+		if len(linePrefix) == 0 {
 			//do nothing
 		} else {
 			//check line prefix
-			switch lineprefix[0] {
+			switch linePrefix[0] {
 			//TODO: adding deny and allow chain
 			case "deny":
 
 			case "allow":
 
 			case "loglevel":
-				atoi, err := strconv.Atoi(lineprefix[1])
+				atoi, err := strconv.Atoi(linePrefix[1])
 				if err != nil {
 					logger.NewError(fmt.Sprintf("parse loglevel error:%e", err))
 				} else {
@@ -78,28 +77,37 @@ func parseLine(str string) {
 					}
 				}
 			default:
-				//check if have 5 fields per line
-				if len(lineprefix) == 5 {
+				//check if we have 5 fields per line
+				if len(linePrefix) == 5 {
 					//check if both address and port is valid
-					if check.IP(lineprefix[0]) && check.IP(lineprefix[2]) {
+					if check.IP(linePrefix[0]) && check.IP(linePrefix[2]) {
 						//check port is valid
-						if check.Port(lineprefix[1]) && check.Port(lineprefix[3]) {
+						if check.Port(linePrefix[1]) && check.Port(linePrefix[3]) {
 							//check protocol
-							if check.Protocol(lineprefix[4]) {
+							if check.Protocol(linePrefix[4]) {
 								//TODO: add to config
-
+								ForwardItems.Add(linePrefix[0], safeAtoI(linePrefix[1]), linePrefix[2], safeAtoI(linePrefix[3]), linePrefix[4])
 							} else {
-								logger.NewError(fmt.Sprintf("protocol: \"%s\" is invalid.", lineprefix[4]))
+								logger.NewError(fmt.Sprintf("protocol: \"%s\" is invalid in line:%d,Skipping...", linePrefix[4], phraseLine))
 							}
 						} else {
-							logger.NewError(fmt.Sprintf("port: is invalid.", lineprefix[2]))
+							logger.NewError(fmt.Sprintf("port is invalid in line:%d,Skipping...", phraseLine))
 						}
 					}
 				} else {
-					logger.NewError(fmt.Sprintf("line: %s is invalid.Skipping", str))
+					logger.NewError(fmt.Sprintf("line:%d is invalid.Skipping...", phraseLine))
 				}
 
 			}
 		}
 	}
+}
+
+//safeAtoI is format string to int. Use it when safe.
+func safeAtoI(str string) int {
+	num, err := strconv.Atoi(str)
+	if err != nil {
+		return 0
+	}
+	return num
 }

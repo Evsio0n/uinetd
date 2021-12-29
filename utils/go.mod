@@ -8,6 +8,7 @@ replace (
 )
 
 require (
+	github.com/evsio0n/log v0.0.0-20210802084243-341ca719db1b // indirect
 	github.com/evsio0n/uinetd/pkg/check v0.0.0-00010101000000-000000000000
 	github.com/evsio0n/uinetd/pkg/logger v0.0.0-00010101000000-000000000000
 )

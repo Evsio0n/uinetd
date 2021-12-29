@@ -2,7 +2,7 @@
 # You can use this file if you want to start uinetd during startup
 
 [Unit]
-Description=Port forwarding
+Description=uinetd Port forwarding Daemon
 After=network-online.target
 
 [Service]
