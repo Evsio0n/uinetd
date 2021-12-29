@@ -2,6 +2,7 @@
 
 install:
 	install -Dm0644 uinetd.service /usr/lib/systemd/system/uinetd.service
+	mkdir -p /etc/uinetd
 	cp uinetd.conf /etc/uinetd/uinetd.conf
 	chmod 0644 /etc/uinetd/uinetd.conf
 	touch /var/log/uinetd.log
@@ -10,4 +11,5 @@ install:
 
 uninstall:
 	rm -f /usr/lib/systemd/system/uinetd.service /etc/uinetd/uinetd.conf /var/log/uinetd.log
+	rm -rf /etc/uinetd/
 	systemctl daemon-reload || true
