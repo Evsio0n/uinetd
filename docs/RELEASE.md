@@ -215,8 +215,8 @@ git push --delete origin v1.0.0
 
 查看发布统计和下载量：
 
-- GitHub Releases: https://github.com/your-username/uinetd/releases
-- Docker 镜像: https://github.com/your-username/uinetd/pkgs/container/uinetd
+- GitHub Releases: https://github.com/evsio0n/uinetd/releases
+- Docker 镜像: https://github.com/evsio0n/uinetd/pkgs/container/uinetd
 
 ## 🐛 问题排查
 

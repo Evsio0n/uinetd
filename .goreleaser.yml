@@ -121,14 +121,14 @@ release:
     
     ### Debian/Ubuntu
     ```bash
-    wget https://github.com/your-username/uinetd/releases/download/{{ .Tag }}/uinetd_{{ .Version }}_linux_amd64.deb
+    wget https://github.com/evsio0n/uinetd/releases/download/{{ .Tag }}/uinetd_{{ .Version }}_linux_amd64.deb
     sudo dpkg -i uinetd_{{ .Version }}_linux_amd64.deb
     sudo systemctl enable --now uinetd
     ```
     
     ### RHEL/CentOS/Fedora
     ```bash
-    wget https://github.com/your-username/uinetd/releases/download/{{ .Tag }}/uinetd_{{ .Version }}_linux_amd64.rpm
+    wget https://github.com/evsio0n/uinetd/releases/download/{{ .Tag }}/uinetd_{{ .Version }}_linux_amd64.rpm
     sudo rpm -i uinetd_{{ .Version }}_linux_amd64.rpm
     sudo systemctl enable --now uinetd
     ```
@@ -145,7 +145,7 @@ release:
     sudo systemctl enable --now uinetd
     ```
     
-    **完整更新日志**: https://github.com/your-username/uinetd/compare/{{ .PreviousTag }}...{{ .Tag }}
+    **完整更新日志**: https://github.com/evsio0n/uinetd/compare/{{ .PreviousTag }}...{{ .Tag }}
 
 # 移除 Docker 相关配置
 
@@ -178,7 +178,7 @@ nfpms:
     
     # 包信息
     vendor: uinetd
-    homepage: https://github.com/your-username/uinetd
+    homepage: https://github.com/evsio0n/uinetd
     maintainer: Your Name <your.email@example.com>
     description: |
       Network redirection server - TCP & UDP port forwarding tool.
@@ -235,8 +235,7 @@ nfpms:
     # Deb 特定配置
     deb:
       compression: xz
-      fields:
-        Priority: optional
+      # fields 移除以避免重复 Priority
 
 # 公告
 announce:
