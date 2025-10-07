@@ -57,8 +57,8 @@ func (p *UDPProxy) Start() error {
 	go p.cleanupSessions()
 
 	// 处理接收的数据
-    go func() {
-        defer func() { _ = listener.Close() }()
+	go func() {
+		defer func() { _ = listener.Close() }()
 		buffer := make([]byte, 65536)
 
 		for {
@@ -68,7 +68,10 @@ func (p *UDPProxy) Start() error {
 				continue
 			}
 
-			go p.handlePacket(listener, clientAddr, buffer[:n])
+			// 为每个数据包拷贝独立切片，避免共享底层数组被后续读覆盖
+			dataCopy := make([]byte, n)
+			copy(dataCopy, buffer[:n])
+			go p.handlePacket(listener, clientAddr, dataCopy)
 		}
 	}()
 
@@ -122,7 +125,7 @@ func (p *UDPProxy) handlePacket(listener *net.UDPConn, clientAddr *net.UDPAddr, 
 	p.mu.Unlock()
 
 	// 转发数据到目标服务器
-        if _, err := session.targetConn.Write(data); err != nil {
+	if _, err := session.targetConn.Write(data); err != nil {
 		p.logger.LogError("UDP 转发失败: %v", err)
 	}
 }
@@ -131,17 +134,17 @@ func (p *UDPProxy) handlePacket(listener *net.UDPConn, clientAddr *net.UDPAddr, 
 func (p *UDPProxy) receiveFromTarget(listener *net.UDPConn, session *UDPSession, sessionKey string) {
 	buffer := make([]byte, 65536)
 
-    for {
-        if err := session.targetConn.SetReadDeadline(time.Now().Add(30 * time.Second)); err != nil {
-            p.logger.LogDebug("设置 UDP 读超时失败: %v", err)
-        }
-        n, err := session.targetConn.Read(buffer)
+	for {
+		if err := session.targetConn.SetReadDeadline(time.Now().Add(30 * time.Second)); err != nil {
+			p.logger.LogDebug("设置 UDP 读超时失败: %v", err)
+		}
+		n, err := session.targetConn.Read(buffer)
 		if err != nil {
 			// 超时或错误，关闭会话
 			p.mu.Lock()
 			delete(p.sessions, sessionKey)
 			p.mu.Unlock()
-            _ = session.targetConn.Close()
+			_ = session.targetConn.Close()
 			return
 		}
 
@@ -151,7 +154,7 @@ func (p *UDPProxy) receiveFromTarget(listener *net.UDPConn, session *UDPSession,
 		p.mu.Unlock()
 
 		// 转发响应到客户端
-        if _, err = listener.WriteToUDP(buffer[:n], session.clientAddr); err != nil {
+		if _, err = listener.WriteToUDP(buffer[:n], session.clientAddr); err != nil {
 			p.logger.LogError("UDP 响应转发失败: %v", err)
 		}
 	}
@@ -167,8 +170,8 @@ func (p *UDPProxy) cleanupSessions() {
 		p.mu.Lock()
 		for key, session := range p.sessions {
 			// 5分钟无活动则清理
-            if now.Sub(session.lastActive) > 5*time.Minute {
-                _ = session.targetConn.Close()
+			if now.Sub(session.lastActive) > 5*time.Minute {
+				_ = session.targetConn.Close()
 				delete(p.sessions, key)
 				p.logger.LogDebug("清理过期 UDP 会话: %s", key)
 			}
