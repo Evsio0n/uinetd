@@ -2,6 +2,9 @@
 uinted
 uinted-*
 
+#cursor
+.cursor/
+
 # 测试覆盖率
 coverage.out
 coverage.html

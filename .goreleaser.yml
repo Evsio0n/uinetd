@@ -70,7 +70,7 @@ checksum:
 
 # 快照版本
 snapshot:
-  name_template: "{{ incpatch .Version }}-next"
+  version_template: "{{ incpatch .Version }}-next"
 
 # 更新日志
 changelog:
