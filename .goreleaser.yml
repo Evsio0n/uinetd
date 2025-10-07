@@ -175,6 +175,8 @@ release:
 nfpms:
   - id: packages
     package_name: uinetd
+    builds:
+      - uinetd
     
     # 包信息
     vendor: uinetd
@@ -189,6 +191,7 @@ nfpms:
     formats:
       - deb
       - rpm
+    bindir: /usr/local/bin
     
     # 依赖
     dependencies: []
