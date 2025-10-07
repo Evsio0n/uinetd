@@ -175,7 +175,7 @@ release:
 nfpms:
   - id: packages
     package_name: uinetd
-    builds:
+    ids:
       - uinetd
     
     # 包信息
