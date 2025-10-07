@@ -1,0 +1,39 @@
+# Git
+.git
+.gitignore
+.github
+
+# 编译产物
+uinetd
+uinetd-*
+*.exe
+*.dll
+*.so
+*.dylib
+
+# 测试
+*.test
+coverage.out
+coverage.html
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 文档
+docs/
+*.md
+!README.md
+
+# 其他
+scripts/
+dist/
+tmp/
+

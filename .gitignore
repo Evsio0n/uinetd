@@ -1,0 +1,31 @@
+# 二进制文件
+uinted
+uinted-*
+
+# 测试覆盖率
+coverage.out
+coverage.html
+
+# 临时文件
+*.log
+*.tmp
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# 操作系统
+.DS_Store
+Thumbs.db
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+

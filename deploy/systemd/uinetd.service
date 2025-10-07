@@ -1,0 +1,39 @@
+[Unit]
+Description=uinetd - Network Redirection Server
+Documentation=https://github.com/your-repo/uinetd
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+
+# 主程序
+ExecStart=/usr/local/bin/uinetd -c /etc/uinetd.conf
+
+# 重启策略
+Restart=on-failure
+RestartSec=5s
+
+# 安全选项
+# 限制进程权限
+NoNewPrivileges=true
+
+# 进程资源限制
+LimitNOFILE=65536
+LimitNPROC=512
+
+# 日志
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=uinetd
+
+# 优雅关闭
+KillMode=process
+KillSignal=SIGTERM
+TimeoutStopSec=30s
+
+[Install]
+WantedBy=multi-user.target
+

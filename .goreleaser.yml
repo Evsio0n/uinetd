@@ -1,0 +1,274 @@
+# GoReleaser 配置文件
+# 文档: https://goreleaser.com
+
+version: 2
+
+# 项目信息
+project_name: uinetd
+
+# 编译前钩子
+before:
+  hooks:
+    - go mod tidy
+    - go mod download
+
+# 构建配置
+builds:
+  - id: uinetd
+    main: ./cmd/uinetd
+    binary: uinetd
+    
+    # 编译环境变量
+    env:
+      - CGO_ENABLED=0
+    
+    # 编译标志
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.buildTime={{.Date}}
+    
+    # 目标平台：仅 Linux
+    goos:
+      - linux
+
+    # 架构：amd64/arm64/armhf(loong64/riscv64)
+    goarch:
+      - amd64
+      - arm64
+      - arm
+      - loong64
+      - riscv64
+
+    # armhf 对应 GOARM=7
+    goarm:
+      - "7"
+
+# 归档配置
+archives:
+  - id: uinetd
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    
+    # 归档文件内容
+    files:
+      - README.md
+      - LICENSE
+      - configs/uinetd.conf.example
+      - deploy/systemd/uinetd.service
+
+# 校验和
+checksum:
+  name_template: 'checksums.txt'
+  algorithm: sha256
+
+# 快照版本
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
+# 更新日志
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^ci:'
+      - '^chore:'
+      - '^style:'
+      - 'merge conflict'
+      - Merge pull request
+      - Merge remote-tracking branch
+      - Merge branch
+  groups:
+    - title: '新功能'
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: 'Bug 修复'
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: '性能优化'
+      regexp: '^.*?perf(\([[:word:]]+\))??!?:.+$'
+      order: 2
+    - title: '其他变更'
+      order: 999
+
+# GitHub Release
+release:
+  github:
+    owner: evsio0n
+    name: uinetd
+  
+  # 是否草稿
+  draft: false
+  
+  # 是否预发布
+  prerelease: auto
+  
+  # Release 模式
+  mode: replace
+  
+  # Release 页脚（仅 Linux deb/rpm 与二进制）
+  footer: |
+    ## 安装
+    
+    ### Debian/Ubuntu
+    ```bash
+    wget https://github.com/your-username/uinetd/releases/download/{{ .Tag }}/uinetd_{{ .Version }}_linux_amd64.deb
+    sudo dpkg -i uinetd_{{ .Version }}_linux_amd64.deb
+    sudo systemctl enable --now uinetd
+    ```
+    
+    ### RHEL/CentOS/Fedora
+    ```bash
+    wget https://github.com/your-username/uinetd/releases/download/{{ .Tag }}/uinetd_{{ .Version }}_linux_amd64.rpm
+    sudo rpm -i uinetd_{{ .Version }}_linux_amd64.rpm
+    sudo systemctl enable --now uinetd
+    ```
+    
+    ### 手动安装（二进制）
+    ```bash
+    # 以 amd64 为例
+    tar -xzf uinetd_{{ .Version }}_linux_x86_64.tar.gz
+    cd uinetd_{{ .Version }}_linux_x86_64
+    sudo install -m 755 uinetd /usr/local/bin/
+    sudo install -m 644 configs/uinetd.conf.example /etc/uinetd.conf
+    sudo install -m 644 deploy/systemd/uinetd.service /usr/lib/systemd/system/
+    sudo systemctl daemon-reload
+    sudo systemctl enable --now uinetd
+    ```
+    
+    **完整更新日志**: https://github.com/your-username/uinetd/compare/{{ .PreviousTag }}...{{ .Tag }}
+
+# 移除 Docker 相关配置
+
+# # Homebrew
+# brews:
+#   - repository:
+#       owner: your-username
+#       name: homebrew-tap
+#       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    
+#     folder: Formula
+    
+#     homepage: "https://github.com/your-username/pinetd"
+#     description: "Network redirection server - TCP & UDP port forwarding tool"
+#     license: "MIT"
+    
+#     test: |
+#       system "#{bin}/pinetd -v"
+    
+#     install: |
+#       bin.install "pinetd"
+#       etc.install "configs/uinetd.conf.example" => "uinetd.conf"
+
+# 移除 AUR 配置
+
+# Nix 包
+nfpms:
+  - id: packages
+    package_name: uinetd
+    
+    # 包信息
+    vendor: uinetd
+    homepage: https://github.com/your-username/uinetd
+    maintainer: Your Name <your.email@example.com>
+    description: |
+      Network redirection server - TCP & UDP port forwarding tool.
+      Similar to rinetd but with UDP support and modern features.
+    license: MIT
+    
+    # 格式
+    formats:
+      - deb
+      - rpm
+    
+    # 依赖
+    dependencies: []
+    recommends: []
+    suggests: []
+    
+    # 配置文件
+    contents:
+      # 配置文件
+      - src: configs/uinetd.conf.example
+        dst: /etc/uinetd.conf
+        type: config|noreplace
+        file_info:
+          mode: 0644
+      
+      # systemd 服务文件
+      - src: deploy/systemd/uinetd.service
+        dst: /usr/lib/systemd/system/uinetd.service
+        file_info:
+          mode: 0644
+      
+      # 文档
+      - src: README.md
+        dst: /usr/share/doc/uinetd/README.md
+        file_info:
+          mode: 0644
+      
+      - src: LICENSE
+        dst: /usr/share/doc/uinetd/LICENSE
+        file_info:
+          mode: 0644
+    
+    # 脚本
+    scripts:
+      # 安装后脚本
+      postinstall: |
+        #!/bin/sh
+        # 重载 systemd
+        if command -v systemctl >/dev/null 2>&1; then
+          systemctl daemon-reload >/dev/null 2>&1 || true
+        fi
+        echo "uinetd 已安装"
+        echo "配置文件: /etc/uinetd.conf"
+        echo "启动服务: sudo systemctl enable --now uinetd"
+      
+      # 卸载前脚本
+      preremove: |
+        #!/bin/sh
+        # 停止并禁用服务
+        if command -v systemctl >/dev/null 2>&1; then
+          if systemctl is-active uinetd >/dev/null 2>&1; then
+            systemctl stop uinetd >/dev/null 2>&1 || true
+          fi
+          if systemctl is-enabled uinetd >/dev/null 2>&1; then
+            systemctl disable uinetd >/dev/null 2>&1 || true
+          fi
+        fi
+      
+      # 卸载后脚本
+      postremove: |
+        #!/bin/sh
+        # 重载 systemd
+        if command -v systemctl >/dev/null 2>&1; then
+          systemctl daemon-reload >/dev/null 2>&1 || true
+        fi
+        echo "uinetd 已卸载"
+        echo "配置文件已保留在 /etc/uinetd.conf"
+    
+    # RPM 特定配置
+    rpm:
+      group: System Environment/Daemons
+      compression: lzma
+    
+    # Deb 特定配置
+    deb:
+      compression: xz
+      fields:
+        Priority: optional
+
+# 公告
+announce:
+  skip: '{{gt .Patch 0}}'
+

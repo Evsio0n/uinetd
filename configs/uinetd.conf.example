@@ -1,0 +1,35 @@
+#
+# this is the configuration file for uinetd, the internet redirection server
+#
+# you may specify global allow and deny rules here
+# only ip addresses are matched, hostnames cannot be specified here
+# the wildcards you may use are * and ?
+# Redirects TCP & UDP connections from a local address & port to another address.
+# Configuration files is just in /etc/uinetd.conf.(Like rinetd).
+# The process will open a socket to listen all the port from local bindings.
+
+#
+# forwarding rules come here
+#
+#
+# protocol "both" which means create both TCP and UDP connection. "raw" means using raw socket connection to destination.Protocol is using at your need.
+# bindadress    bindport  connectaddress  connectport   protocol
+# 0.0.0.0           80      192.168.0.1     8080       tcp
+# [::1]             80      192.168.0.1     8080       udp
+# [::1]             80      [2001:DB8::1]   8080       both
+# [::1]             80      2001:DB8::1   8080       both
+# [::1]             80      domain.site     8080       raw
+0.0.0.0 9912    2001:DB8::1     9912       tcp
+# 示例规则 (取消注释以使用)
+# 0.0.0.0       8080    192.168.1.2     80         tcp
+# 0.0.0.0       53      8.8.8.8         53         udp
+# 0.0.0.0       3000    example.com     80         all
+
+# logging information
+# loglevel set to 4: Note  every connection  `Time, From IP, Port` to `Destination IP,Port`, Errors
+# loglevel set to 3: Note only prohibited connection `Time, From IP, Port` to `Destination IP,Port` , Errors
+# loglevel set to 2: Note only prohibited connection `Time` , Errors
+# loglevel set to 1: Errors
+# uncomment the following line if you set loglevel support.(Default 1)
+loglevel 1
+
