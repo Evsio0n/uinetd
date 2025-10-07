@@ -223,39 +223,9 @@ nfpms:
     
     # 脚本
     scripts:
-      # 安装后脚本
-      postinstall: |
-        #!/bin/sh
-        # 重载 systemd
-        if command -v systemctl >/dev/null 2>&1; then
-          systemctl daemon-reload >/dev/null 2>&1 || true
-        fi
-        echo "uinetd 已安装"
-        echo "配置文件: /etc/uinetd.conf"
-        echo "启动服务: sudo systemctl enable --now uinetd"
-      
-      # 卸载前脚本
-      preremove: |
-        #!/bin/sh
-        # 停止并禁用服务
-        if command -v systemctl >/dev/null 2>&1; then
-          if systemctl is-active uinetd >/dev/null 2>&1; then
-            systemctl stop uinetd >/dev/null 2>&1 || true
-          fi
-          if systemctl is-enabled uinetd >/dev/null 2>&1; then
-            systemctl disable uinetd >/dev/null 2>&1 || true
-          fi
-        fi
-      
-      # 卸载后脚本
-      postremove: |
-        #!/bin/sh
-        # 重载 systemd
-        if command -v systemctl >/dev/null 2>&1; then
-          systemctl daemon-reload >/dev/null 2>&1 || true
-        fi
-        echo "uinetd 已卸载"
-        echo "配置文件已保留在 /etc/uinetd.conf"
+      postinstall: scripts/postinstall.sh
+      preremove: scripts/preremove.sh
+      postremove: scripts/postremove.sh
     
     # RPM 特定配置
     rpm:
