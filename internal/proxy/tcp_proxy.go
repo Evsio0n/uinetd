@@ -37,7 +37,7 @@ func (p *TCPProxy) Start() error {
 		listenAddr, p.rule.ConnectAddress, p.rule.ConnectPort)
 
 	go func() {
-		defer listener.Close()
+		defer func() { _ = listener.Close() }()
 		for {
 			conn, err := listener.Accept()
 			if err != nil {
@@ -54,10 +54,16 @@ func (p *TCPProxy) Start() error {
 
 // handleConnection 处理TCP连接
 func (p *TCPProxy) handleConnection(clientConn net.Conn) {
-	defer clientConn.Close()
+	defer func() { _ = clientConn.Close() }()
 
 	// 获取客户端信息
-	clientAddr := clientConn.RemoteAddr().(*net.TCPAddr)
+	var clientAddr *net.TCPAddr
+	if addr, ok := clientConn.RemoteAddr().(*net.TCPAddr); ok {
+		clientAddr = addr
+	} else {
+		p.logger.LogError("无法解析客户端地址类型: %T", clientConn.RemoteAddr())
+		return
+	}
 
 	// 连接到目标服务器
 	targetAddr := net.JoinHostPort(p.rule.ConnectAddress, strconv.Itoa(p.rule.ConnectPort))
@@ -66,7 +72,7 @@ func (p *TCPProxy) handleConnection(clientConn net.Conn) {
 		p.logger.LogError("连接目标服务器失败 %s: %v", targetAddr, err)
 		return
 	}
-	defer targetConn.Close()
+	defer func() { _ = targetConn.Close() }()
 
 	// 记录连接
 	p.logger.LogConnection(
@@ -83,15 +89,27 @@ func (p *TCPProxy) handleConnection(clientConn net.Conn) {
 	// 客户端 -> 目标服务器
 	go func() {
 		defer wg.Done()
-		io.Copy(targetConn, clientConn)
-		targetConn.(*net.TCPConn).CloseWrite()
+		if _, err := io.Copy(targetConn, clientConn); err != nil {
+			p.logger.LogError("转发客户端->目标失败: %v", err)
+		}
+		if tcp, ok := targetConn.(*net.TCPConn); ok {
+			if err := tcp.CloseWrite(); err != nil {
+				p.logger.LogDebug("目标连接半关闭失败: %v", err)
+			}
+		}
 	}()
 
 	// 目标服务器 -> 客户端
 	go func() {
 		defer wg.Done()
-		io.Copy(clientConn, targetConn)
-		clientConn.(*net.TCPConn).CloseWrite()
+		if _, err := io.Copy(clientConn, targetConn); err != nil {
+			p.logger.LogError("转发目标->客户端失败: %v", err)
+		}
+		if tcp, ok := clientConn.(*net.TCPConn); ok {
+			if err := tcp.CloseWrite(); err != nil {
+				p.logger.LogDebug("客户端连接半关闭失败: %v", err)
+			}
+		}
 	}()
 
 	wg.Wait()
