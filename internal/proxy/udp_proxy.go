@@ -57,8 +57,8 @@ func (p *UDPProxy) Start() error {
 	go p.cleanupSessions()
 
 	// 处理接收的数据
-	go func() {
-		defer listener.Close()
+    go func() {
+        defer func() { _ = listener.Close() }()
 		buffer := make([]byte, 65536)
 
 		for {
@@ -122,8 +122,7 @@ func (p *UDPProxy) handlePacket(listener *net.UDPConn, clientAddr *net.UDPAddr, 
 	p.mu.Unlock()
 
 	// 转发数据到目标服务器
-	_, err := session.targetConn.Write(data)
-	if err != nil {
+        if _, err := session.targetConn.Write(data); err != nil {
 		p.logger.LogError("UDP 转发失败: %v", err)
 	}
 }
@@ -132,15 +131,17 @@ func (p *UDPProxy) handlePacket(listener *net.UDPConn, clientAddr *net.UDPAddr, 
 func (p *UDPProxy) receiveFromTarget(listener *net.UDPConn, session *UDPSession, sessionKey string) {
 	buffer := make([]byte, 65536)
 
-	for {
-		session.targetConn.SetReadDeadline(time.Now().Add(30 * time.Second))
-		n, err := session.targetConn.Read(buffer)
+    for {
+        if err := session.targetConn.SetReadDeadline(time.Now().Add(30 * time.Second)); err != nil {
+            p.logger.LogDebug("设置 UDP 读超时失败: %v", err)
+        }
+        n, err := session.targetConn.Read(buffer)
 		if err != nil {
 			// 超时或错误，关闭会话
 			p.mu.Lock()
 			delete(p.sessions, sessionKey)
 			p.mu.Unlock()
-			session.targetConn.Close()
+            _ = session.targetConn.Close()
 			return
 		}
 
@@ -150,8 +151,7 @@ func (p *UDPProxy) receiveFromTarget(listener *net.UDPConn, session *UDPSession,
 		p.mu.Unlock()
 
 		// 转发响应到客户端
-		_, err = listener.WriteToUDP(buffer[:n], session.clientAddr)
-		if err != nil {
+        if _, err = listener.WriteToUDP(buffer[:n], session.clientAddr); err != nil {
 			p.logger.LogError("UDP 响应转发失败: %v", err)
 		}
 	}
@@ -167,8 +167,8 @@ func (p *UDPProxy) cleanupSessions() {
 		p.mu.Lock()
 		for key, session := range p.sessions {
 			// 5分钟无活动则清理
-			if now.Sub(session.lastActive) > 5*time.Minute {
-				session.targetConn.Close()
+            if now.Sub(session.lastActive) > 5*time.Minute {
+                _ = session.targetConn.Close()
 				delete(p.sessions, key)
 				p.logger.LogDebug("清理过期 UDP 会话: %s", key)
 			}

@@ -25,11 +25,12 @@ type Config struct {
 
 // ParseConfig 解析配置文件
 func ParseConfig(filename string) (*Config, error) {
+	// #nosec G304: 配置文件路径由用户/调用方提供，属预期可变输入
 	file, err := os.Open(filename)
 	if err != nil {
 		return nil, fmt.Errorf("无法打开配置文件: %v", err)
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	config := &Config{
 		Rules:    make([]ForwardRule, 0),

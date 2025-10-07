@@ -1,6 +1,6 @@
 [Unit]
 Description=uinetd - Network Redirection Server
-Documentation=https://github.com/your-repo/uinetd
+Documentation=https://github.com/evsio0n/uinetd
 After=network.target network-online.target
 Wants=network-online.target
 
