@@ -90,7 +90,7 @@ func (p *TCPProxy) handleConnection(clientConn net.Conn) {
 	go func() {
 		defer wg.Done()
 		if _, err := io.Copy(targetConn, clientConn); err != nil {
-			p.logger.LogError("转发客户端->目标失败: %v", err)
+			p.logger.LogDebug("转发客户端->目标失败: %v", err)
 		}
 		if tcp, ok := targetConn.(*net.TCPConn); ok {
 			if err := tcp.CloseWrite(); err != nil {
@@ -103,7 +103,7 @@ func (p *TCPProxy) handleConnection(clientConn net.Conn) {
 	go func() {
 		defer wg.Done()
 		if _, err := io.Copy(clientConn, targetConn); err != nil {
-			p.logger.LogError("转发目标->客户端失败: %v", err)
+			p.logger.LogDebug("转发目标->客户端失败: %v", err)
 		}
 		if tcp, ok := clientConn.(*net.TCPConn); ok {
 			if err := tcp.CloseWrite(); err != nil {

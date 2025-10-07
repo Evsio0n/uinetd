@@ -126,7 +126,7 @@ func (p *UDPProxy) handlePacket(listener *net.UDPConn, clientAddr *net.UDPAddr, 
 
 	// 转发数据到目标服务器
 	if _, err := session.targetConn.Write(data); err != nil {
-		p.logger.LogError("UDP 转发失败: %v", err)
+		p.logger.LogDebug("UDP 转发失败: %v", err)
 	}
 }
 
@@ -155,7 +155,7 @@ func (p *UDPProxy) receiveFromTarget(listener *net.UDPConn, session *UDPSession,
 
 		// 转发响应到客户端
 		if _, err = listener.WriteToUDP(buffer[:n], session.clientAddr); err != nil {
-			p.logger.LogError("UDP 响应转发失败: %v", err)
+			p.logger.LogDebug("UDP 响应转发失败: %v", err)
 		}
 	}
 }
