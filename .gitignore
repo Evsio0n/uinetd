@@ -6,6 +6,10 @@ uinted-*
 coverage.out
 coverage.html
 
+#cursor
+.cursor/
+.cursor
+
 # 临时文件
 *.log
 *.tmp

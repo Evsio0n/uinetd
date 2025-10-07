@@ -3,6 +3,10 @@
 .gitignore
 .github
 
+#cursor
+.cursor/
+.cursor
+
 # 编译产物
 uinetd
 uinetd-*
