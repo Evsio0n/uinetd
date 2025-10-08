@@ -1,6 +1,6 @@
 # uinetd - 网络重定向服务器
 
-[![Build Status](https://github.com/evsio0n/uinetd/workflows/Build%20and%20Release/badge.svg)](https://github.com/your-repo/uinetd/actions)
+[![Build Status](https://github.com/evsio0n/uinetd/workflows/Build%20and%20Release/badge.svg)](https://github.com/evsio0n/uinetd/actions)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 uinetd 是一个类似于 rinetd 的网络重定向工具，用 Go 语言编写。它可以将 TCP 和 UDP 连接从本地地址和端口重定向到另一个地址和端口。

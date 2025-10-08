@@ -58,7 +58,11 @@ func (p *UDPProxy) Start() error {
 
 	// 处理接收的数据
 	go func() {
-		defer func() { _ = listener.Close() }()
+		defer func() {
+			if err := listener.Close(); err != nil {
+				p.logger.LogDebug("关闭 UDP 监听器失败: %v", err)
+			}
+		}()
 		buffer := make([]byte, 65536)
 
 		for {
@@ -144,7 +148,9 @@ func (p *UDPProxy) receiveFromTarget(listener *net.UDPConn, session *UDPSession,
 			p.mu.Lock()
 			delete(p.sessions, sessionKey)
 			p.mu.Unlock()
-			_ = session.targetConn.Close()
+			if err := session.targetConn.Close(); err != nil {
+				p.logger.LogDebug("关闭 UDP 目标连接失败: %v", err)
+			}
 			return
 		}
 
@@ -171,7 +177,9 @@ func (p *UDPProxy) cleanupSessions() {
 		for key, session := range p.sessions {
 			// 5分钟无活动则清理
 			if now.Sub(session.lastActive) > 5*time.Minute {
-				_ = session.targetConn.Close()
+				if err := session.targetConn.Close(); err != nil {
+					p.logger.LogDebug("关闭 UDP 目标连接失败: %v", err)
+				}
 				delete(p.sessions, key)
 				p.logger.LogDebug("清理过期 UDP 会话: %s", key)
 			}

@@ -37,7 +37,11 @@ func (p *TCPProxy) Start() error {
 		listenAddr, p.rule.ConnectAddress, p.rule.ConnectPort)
 
 	go func() {
-		defer func() { _ = listener.Close() }()
+		defer func() {
+			if err := listener.Close(); err != nil {
+				p.logger.LogDebug("关闭 TCP 监听器失败: %v", err)
+			}
+		}()
 		for {
 			conn, err := listener.Accept()
 			if err != nil {
@@ -54,7 +58,11 @@ func (p *TCPProxy) Start() error {
 
 // handleConnection 处理TCP连接
 func (p *TCPProxy) handleConnection(clientConn net.Conn) {
-	defer func() { _ = clientConn.Close() }()
+	defer func() {
+		if err := clientConn.Close(); err != nil {
+			p.logger.LogDebug("关闭客户端连接失败: %v", err)
+		}
+	}()
 
 	// 获取客户端信息
 	var clientAddr *net.TCPAddr
@@ -72,7 +80,11 @@ func (p *TCPProxy) handleConnection(clientConn net.Conn) {
 		p.logger.LogError("连接目标服务器失败 %s: %v", targetAddr, err)
 		return
 	}
-	defer func() { _ = targetConn.Close() }()
+	defer func() {
+		if err := targetConn.Close(); err != nil {
+			p.logger.LogDebug("关闭目标连接失败: %v", err)
+		}
+	}()
 
 	// 记录连接
 	p.logger.LogConnection(

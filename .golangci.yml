@@ -7,7 +7,9 @@ run:
   modules-download-mode: readonly
 
 output:
-  format: colored-line-number
+  formats:
+    - format: github-actions
+    - format: colored-line-number
   print-issued-lines: true
   print-linter-name: true
 
@@ -16,6 +18,7 @@ linters:
     - errcheck
     - gosimple
     - govet
+    - shadow
     - ineffassign
     - staticcheck
     - unused
@@ -34,9 +37,6 @@ linters-settings:
   errcheck:
     check-blank: true
     check-type-assertions: true
-  
-  govet:
-    check-shadowing: true
   
   gofmt:
     simplify: true

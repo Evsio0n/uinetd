@@ -30,7 +30,11 @@ func ParseConfig(filename string) (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("无法打开配置文件: %v", err)
 	}
-	defer func() { _ = file.Close() }()
+	defer func() {
+		if err := file.Close(); err != nil {
+			fmt.Printf("关闭配置文件失败: %v\n", err)
+		}
+	}()
 
 	config := &Config{
 		Rules:    make([]ForwardRule, 0),
