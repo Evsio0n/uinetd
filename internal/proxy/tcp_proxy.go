@@ -1,25 +1,32 @@
 package proxy
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net"
 	"strconv"
 	"sync"
-	"uinetd/internal/config"
-	"uinetd/internal/logger"
+	"time"
+
+	"github.com/evsio0n/uinetd/internal/config"
+	"github.com/evsio0n/uinetd/internal/logger"
 )
 
 // TCPProxy TCP代理服务器
 type TCPProxy struct {
-	rule   config.ForwardRule
-	logger *logger.Logger
+	rule     config.ForwardRule
+	cfg      *config.Config
+	logger   *logger.Logger
+	listener net.Listener
+	wg       sync.WaitGroup // 追踪所有活跃连接
 }
 
 // NewTCPProxy 创建新的TCP代理
-func NewTCPProxy(rule config.ForwardRule, log *logger.Logger) *TCPProxy {
+func NewTCPProxy(rule config.ForwardRule, cfg *config.Config, log *logger.Logger) *TCPProxy {
 	return &TCPProxy{
 		rule:   rule,
+		cfg:    cfg,
 		logger: log,
 	}
 }
@@ -32,28 +39,63 @@ func (p *TCPProxy) Start() error {
 	if err != nil {
 		return fmt.Errorf("无法监听 TCP %s: %v", listenAddr, err)
 	}
+	p.listener = listener
 
 	p.logger.LogInfo("TCP 代理启动: %s -> %s:%d",
 		listenAddr, p.rule.ConnectAddress, p.rule.ConnectPort)
 
-	go func() {
-		defer func() {
-			if err := listener.Close(); err != nil {
-				p.logger.LogDebug("关闭 TCP 监听器失败: %v", err)
-			}
-		}()
-		for {
-			conn, err := listener.Accept()
-			if err != nil {
-				p.logger.LogError("接受连接失败: %v", err)
-				continue
-			}
+	return nil
+}
 
-			go p.handleConnection(conn)
+// Run 运行 TCP 代理的 accept 循环，直到 ctx 取消或 listener 关闭
+func (p *TCPProxy) Run(ctx context.Context) {
+	go func() {
+		<-ctx.Done()
+		if p.listener != nil {
+			p.listener.Close()
 		}
 	}()
 
-	return nil
+	for {
+		conn, err := p.listener.Accept()
+		if err != nil {
+			// 检查是否是因为 listener 被关闭（正常退出）
+			select {
+			case <-ctx.Done():
+				return
+			default:
+			}
+			p.logger.LogError("接受连接失败: %v", err)
+			continue
+		}
+
+		p.wg.Add(1)
+		go func() {
+			defer p.wg.Done()
+			p.handleConnection(conn)
+		}()
+	}
+}
+
+// Shutdown 优雅关闭 TCP 代理，等待所有活跃连接完成
+func (p *TCPProxy) Shutdown(timeout time.Duration) {
+	if p.listener != nil {
+		p.listener.Close()
+	}
+
+	// 等待所有活跃连接完成，或超时
+	done := make(chan struct{})
+	go func() {
+		p.wg.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		p.logger.LogInfo("TCP 代理已优雅关闭 (所有连接已完成)")
+	case <-time.After(timeout):
+		p.logger.LogInfo("TCP 代理关闭超时，强制退出 (等待了 %v)", timeout)
+	}
 }
 
 // handleConnection 处理TCP连接
@@ -73,9 +115,23 @@ func (p *TCPProxy) handleConnection(clientConn net.Conn) {
 		return
 	}
 
+	// 设置 TCP KeepAlive（仅在配置了 keepalive 时启用）
+	if p.cfg.KeepAlive > 0 {
+		if tcpConn, ok := clientConn.(*net.TCPConn); ok {
+			tcpConn.SetKeepAlive(true)
+			tcpConn.SetKeepAlivePeriod(p.cfg.KeepAlive)
+		}
+	}
+
 	// 连接到目标服务器
 	targetAddr := net.JoinHostPort(p.rule.ConnectAddress, strconv.Itoa(p.rule.ConnectPort))
-	targetConn, err := net.Dial("tcp", targetAddr)
+	var targetConn net.Conn
+	var err error
+	if p.cfg.Timeout > 0 {
+		targetConn, err = net.DialTimeout("tcp", targetAddr, p.cfg.Timeout)
+	} else {
+		targetConn, err = net.Dial("tcp", targetAddr)
+	}
 	if err != nil {
 		p.logger.LogError("连接目标服务器失败 %s: %v", targetAddr, err)
 		return

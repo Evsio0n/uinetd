@@ -33,3 +33,9 @@
 # uncomment the following line if you set loglevel support.(Default 1)
 loglevel 1
 
+# TCP keepalive interval in seconds. 0 or unset means use system default.
+# keepalive 30
+
+# Connection timeout in seconds. 0 or unset means no timeout (blocking connect).
+# timeout 10
+

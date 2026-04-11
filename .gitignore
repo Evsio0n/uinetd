@@ -1,17 +1,14 @@
 # 二进制文件
-uinted
-uinted-*
+uinetd
+uinetd-*
 
-#cursor
+# cursor
 .cursor/
+.cursor
 
 # 测试覆盖率
 coverage.out
 coverage.html
-
-#cursor
-.cursor/
-.cursor
 
 # 临时文件
 *.log
@@ -35,4 +32,3 @@ Thumbs.db
 *.dll
 *.so
 *.dylib
-
